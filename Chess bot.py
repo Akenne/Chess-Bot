@@ -4,16 +4,6 @@ import os, time, sys, subprocess, win32api, win32con
 from numpy import *
 from random import randrange
 
-""" 
-All coordinates assume a screen resolution of 1920*1080, left monitor
-and Chrome maximized with the Bookmarks Toolbar enabled.
-board setting extra large
-board colour is irrelevant
-white always on bottom, always queen on promotion
-highlight squares of last move, show coords in board
-make your profile pic this image(a solid red 200*200 box) - http://i.imgur.com/wUg1tqY.png
-"""
-
 def boardcords(img1, img2):
     img1 = asarray(img1) #what your looking for
     img2 = asarray(img2) #big
@@ -33,31 +23,29 @@ def boardcords(img1, img2):
     print('board not found')
     sys.exit
 
+boardcheck = (0,0,170,250) #top left corner, up to the bottom right of first square
+bx, by = boardcords(Image.open('small.png'),grab(boardcheck))
+#bx2, by2
+board = (bx,by,bx+543,by+543) #exact board dimensions(no black lines)
 #coords
-newgame = (260, 654) #the new 1 min game button in the popup(rightside)
-learnmore = (213, 554) #The learn more button
-movelist1 = (870, 200) #to see when game is found(the move list, each row)
-movelist2 = (870, 230)
-movelist3 = (870, 250)
-profpic = (45, 165) #location of profile pic
+newgame = (bx+208, by+470) #the new 1 min game button in the popup(rightside)
+learnmore = (bx+186, by+380) #The learn more button
+movelist1 = (bx+818, by+15) #to see when game is found(the move list, each row)
+movelist2 = (bx+818, by+35)
+movelist3 = (bx+818, by+55)
+profpic = (bx+5, by-20) #location of profile pic
 #colours
 learnmorecolour = (255, 102, 0) #the learn more button colour
 profpiccolour = (255, 35, 28) #colour of profile pic(should be solid)
 movelight = (247, 236, 116) #light square after moving piece
 movedark = (218, 195, 74) #dark square after moving piece
 #coords for pics
-timer = (540,150,580,170) #box around clock to see if red
-boardcheck = (0,0,170,250) #top left corner, up to the bottom right of first square
+timer = (bx+510,by-28,bx+544,by-15) #box around clock to see if red
 s = 68 #distance between each square
 c = 35 #distance to the centre of the first square
-bx, by = boardcords(Image.open('small.png'),grab(boardcheck))
-#bx2, by2
-board = (bx,by,bx+543,by+543) #exact board dimensions(no black lines)
+
 
 stockfish = subprocess.Popen('stockfish-dd-64-modern.exe',	universal_newlines=True, \
-	stdin=subprocess.PIPE, stdout=subprocess.PIPE,)
-
-houdini = subprocess.Popen('Houdini_15a_x64.exe',	universal_newlines=True, \
 	stdin=subprocess.PIPE, stdout=subprocess.PIPE,)
 
 critter = subprocess.Popen('Critter_1.6a_64bit.exe',	universal_newlines=True, \
@@ -218,12 +206,12 @@ def turn(): #check timer to see if it's red, and therefore who's turn
 	r = 0
 	count = 0
 	image = grab(timer).load()
-	for s in range(0, 16):
-		for t in range(0, 16):
+	for s in range(0, 12):
+		for t in range(0, 12):
 			pixlr = (image[s, t])[0]
 			r += pixlr
 			count += 1
-	if (r/count) >252:
+	if (r/count) >253:
 		return(0)#black
 	else:
 		return(1)#white
@@ -238,13 +226,9 @@ def initiate(x):
 def go(): #line is what is input into stockfish before each calc
 	global line
 	print(line)
-	engi = randrange(1,4)
-	print(engi)
+	engi = randrange(1,3)
 	if engi == 1:
-		move = bestmove(stockfish)
-	elif engi == 2:
-		move = bestmove(houdini)	
-	
+		move = bestmove(stockfish)	
 	else:
 		move = bestmove(critter)
 	
@@ -253,7 +237,6 @@ def go(): #line is what is input into stockfish before each calc
 
 if __name__ == '__main__':
 	initiate(stockfish)
-	initiate(houdini)
 	initiate(critter)
 	checkend()
 	startgame()
